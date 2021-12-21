@@ -1,0 +1,41 @@
+- name: Sending Ping to KVM hosts
+  ping:
+ 
+# Uses magic variables to test list of active hosts Vs total hosts targeted by the play
+- name: Checking for targeted KVM hosts
+  run_once: yes
+  assert:
+    that:
+      - ansible_play_hosts == ansible_play_hosts_all
+    msg: "The targeted Virtualization hosts could not be reached"
+ 
+- name: Checking for targeted RHEL OS family
+  assert:
+    that:
+      - ansible_os_family|lower == 'redhat'
+    msg: "Targeted host needs to run RHEL, CentOS, Fedora"
+ 
+- name: Checking for targeted Fedora version
+  assert:
+    that:
+      - ansible_distribution_major_version|int >= 28
+    msg: "Fedora major version should be greater than 28"
+  when: ansible_distribution == "Fedora"
+ 
+- name: Checking for targeted RHEL OS family version
+  assert:
+    that:
+      - ansible_distribution_major_version|int >= 7
+    msg: "RHEL or CentOS major version should >= 7"
+
+- name: Getting CPU virtualization parameters
+  shell: "/usr/bin/egrep -o '(vmx|svm)' /proc/cpuinfo | /usr/bin/sort | /usr/bin/uniq"
+  register: is_virt_capable
+
+
+- name: Checking if hardware virtualization has been turned on
+  assert:
+    that:
+      - is_virt_capable.stdout == 'vmx' or is_virt_capable.stdout == 'svm'
+    msg: "Please enable hardware virtualization in BIOS"
+

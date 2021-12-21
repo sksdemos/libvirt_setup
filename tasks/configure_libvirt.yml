@@ -1,0 +1,88 @@
+
+# NOTE: The first libvirt network is automatically provisioned with the hypervisor. Subsequent networks need to be user provisioned
+- name: Start default libvirt network
+  virt_net:
+    command: start
+    name: "default"
+    state: active
+
+- name: Make default libvirt network autostart
+  virt_net:
+    name: "default"
+    autostart: true
+
+# NOTE: This starts the default storage pool
+- name: Create the default storage pool
+  virt_pool:
+    command: define
+    name: "default"
+    xml: '{{ lookup("template", "libvirt_default_pool.j2") }}'
+
+- name: Making default storage pool active
+  virt_pool:
+    command: start
+    name: "default"
+    state: active
+
+- name: Setting default storage pool to autostart
+  virt_pool:
+    name: "default"
+    autostart: true
+
+
+# NOTE: Bridge creation will be handled automatically by libvirt network configuration below
+# Libvirt default network is stored on the path /etc/libvirt/qemu/network. network xml files are located here
+- name: Checking if Additional libvirt network configuration is required
+  block:
+    - name: Define custom libvirt network
+      virt_net:
+        command: define
+        name: "{{ libvirt.network.network_name }}"
+        xml: '{{ lookup("template", "libvirt_network.j2") }}'
+      when: libvirt.network.network_name != 'default'
+
+    - name: Make custom libvirt network autostart
+      virt_net:
+        name: "{{ libvirt.network.network_name }}"
+        autostart: true
+      when: libvirt.network.network_name != 'default'
+
+    - name: Start custom libvirt network
+      virt_net:
+        command: start
+        name: "{{ libvirt.network.network_name }}"
+        state: active
+      when: libvirt.network.network_name != 'default'
+  when: libvirt.network is defined and libvirt.network.network_name is defined 
+
+
+
+- name: Checking if Additional libvirt storage pool configuration is required
+  block:
+    - name: Ensure custom storage pool path exists
+      file:
+        path: "{{ libvirt.storage.pool_path }}"
+        state: directory
+      failed_when: "libvirt.storage.pool_path is not defined"
+
+    - name: Define custom libvirt storage pool
+      virt_pool:
+        command: define
+        name: "{{ libvirt.storage.pool_name }}"
+        xml: '{{ lookup("template", "libvirt_storage_pool.j2") }}'
+      when: libvirt.storage.pool_name != 'default'
+
+    - name: Setting custom libvirt storage pool to autostart
+      virt_pool:
+        name: "{{ libvirt.storage.pool_name }}"
+        autostart: true
+      when: libvirt.storage.pool_name != 'default'
+
+    - name: Making custom libvirt storage pool active
+      virt_pool:
+        command: start
+        name: "{{ libvirt.storage.pool_name }}"
+        state: active
+      when: libvirt.storage.pool_name != 'default'
+  when: libvirt.storage is defined and libvirt.storage.pool_name is defined
+
