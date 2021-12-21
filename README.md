@@ -35,11 +35,7 @@ This dictionary is used when a new network is required for VMs for a specific de
 | network_gateway | An ipv4 address to be used as a gateway to access external networks. Example **10.0.0.1**
 | network_mask | The subnet mask to be used for the network
 | network_dhcp | Should the network assign a DHCP lease to VMs. Possible values **True** or **False**. If this is set to False then ***network_dhcp_start*** and ***network_dhcp_end*** are not required and will be ignored if set.
-<<<<<<< HEAD
-| network_dhcp_start | An ipv4 address that specifies start range for a DHCP lease for a VM. Example **10.0.0.50**. This specific example case also assumes that you intend using ranges **10.0.0.2** to **10.0.0.49** for setting static IPs for your VMs since this range is excluded from the DHCP range.
-=======
 | network_dhcp_start | An ipv4 address that specifies start range for a DHCP lease for a VM. Example **10.0.0.50**. This specific example case also assumes that you may want to use the range **10.0.0.2** to **10.0.0.49** for setting static IPs for your VMs since these are excluded from the DHCP range.
->>>>>>> v0.1
 | network_dhcp_end | An ipv4 address that specifies end range for a DHCP lease for a VM. Example **10.0.0.254**
 
 #### Example. 
