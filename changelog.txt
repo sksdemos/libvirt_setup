@@ -1,0 +1,4 @@
+* Friday April 10, 2021
+- Initial release of libvirt_setup role
+- Added README.md
+- Added changelog.txt
