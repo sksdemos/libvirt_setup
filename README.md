@@ -1,6 +1,6 @@
 
 
-# Ansible role `libvirt_setup` v0.1
+# Ansible role `libvirt_setup` v0.2
 
 Ansible role for setting up **libvirt** related packages to work effectively with kvm based virtualization on Linux. This role can be used to **add**, **modify** or **delete** additional libvirt storage pools and libvirt networks if that is required for specific applications that you are deploying.
 

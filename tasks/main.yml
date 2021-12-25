@@ -4,6 +4,9 @@
 # Checks for VM hosts, OS and OS version requirements
 - name: Preflight checks
   import_tasks: preflight_check.yml
+  tags: always
+# NOTE: The above import_task has been tagged as always so that the always tag is applied to all tasks inside the role
+#       Therefore the above task will run in all situations including when the playbook that calls the role is tagged
 
 # Installs libvirt packages basis python version
 - name: Installing libvirt

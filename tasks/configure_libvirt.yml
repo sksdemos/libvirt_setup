@@ -86,3 +86,118 @@
       when: libvirt.storage.pool_name != 'default'
   when: libvirt.storage is defined and libvirt.storage.pool_name is defined
 
+
+- name: Deleting libvirt network
+  block:
+    - name: Get existing defined networks (Delete)
+      virt_net:
+        command: list_nets
+      register: networks
+
+    - name: Get network facts (Delete)
+      virt_net:
+        command: facts
+        name: "{{ network_to_delete }}"
+      register: facts
+      when: network_to_delete in networks.list_nets
+
+    - name: Getting network state (Delete)
+      set_fact:
+        state: "{{ facts.ansible_facts.ansible_libvirt_networks[network_to_delete].state }}"
+      when: network_to_delete in networks.list_nets
+
+    - name: Stops the network if active (Delete)
+      virt_net:
+        command: destroy
+        name: "{{ network_to_delete }}"
+      when: network_to_delete in networks.list_nets and state == "active"
+
+    # Noticed deletion of a network does not cause a state change so a handler cannot not be notified
+    - name: Undefine a network (Delete)
+      virt_net:
+        command: undefine
+        name: "{{ network_to_delete }}"
+      when: network_to_delete in networks.list_nets
+  tags: never,delete_network
+
+
+- name: Updating libvirt network configuration
+  block:
+    - name: Get existing defined networks
+      virt_net:
+        command: list_nets
+      register: networks
+
+    - name: Get network facts
+      virt_net:
+        command: facts
+        name: "{{ network_to_update }}"
+      register: facts
+      when: network_to_update in networks.list_nets
+
+    - name: Getting network state
+      set_fact:
+        state: "{{ facts.ansible_facts.ansible_libvirt_networks[network_to_update].state }}"
+
+    - name: Stops the network if it is active
+      virt_net:
+        command: destroy
+        name: "{{ network_to_update }}"
+      when: network_to_update in networks.list_nets and state == "active"
+
+    - name: Updating the libvirt network
+      virt_net:
+        command: modify
+        name: "{{ network_to_update }}"
+        xml: '{{ xml }}'
+      when: network_to_update in networks.list_nets
+
+    - name: Start the libvirt network
+      virt_net:
+        command: start
+        name: "{{ network_to_update }}"
+        state: active
+      when: network_to_update in networks.list_nets
+      notify:
+        - libvirt_guests_service
+  tags:  never,update_network
+
+
+- name: Creating libvirt network
+  block:
+    - name: Get existing defined networks (Create)
+      virt_net:
+        command: list_nets
+      register: networks
+
+    - name: Define custom libvirt network (Create)
+      virt_net:
+        command: define
+        name: "{{ libvirt.network.network_name }}"
+        xml: '{{ lookup("template", "libvirt_network.j2") }}'
+      when: libvirt.network.network_name not in networks.list_nets
+
+    - name: Make custom libvirt network autostart (Create)
+      virt_net:
+        name: "{{ libvirt.network.network_name }}"
+        autostart: true
+      when: libvirt.network.network_name not in networks.list_nets
+
+    - name: Start custom libvirt network (Create)
+      virt_net:
+        command: start
+        name: "{{ libvirt.network.network_name }}"
+        state: active
+      when: libvirt.network.network_name not in networks.list_nets
+    
+    - name: Give sometime 5 seconds for the libvirt network to settle down
+      pause:
+        seconds: 5
+
+    - name: Restart libvirt guests service
+      service:
+        name: libvirt-guests
+        state: restarted
+        
+  when: libvirt.network is defined and libvirt.network.network_name is defined 
+  tags: never,create_network

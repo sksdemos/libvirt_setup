@@ -1,4 +1,10 @@
+* Wednesday August 18, 2021
+- Added feature to add, modify and delete libvirt network
+- Updated the documentation
+- Added sample playbooks to the tests folder
+- bumped up the version to v0.2
+
 * Friday April 10, 2021
-- Initial release of libvirt_setup role
+- Initial release of libvirt_setup role v0.1
 - Added README.md
 - Added changelog.txt
