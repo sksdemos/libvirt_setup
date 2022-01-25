@@ -63,6 +63,10 @@
       file:
         path: "{{ libvirt.storage.pool_path }}"
         state: directory
+        mode: '0775'
+        owner: root
+        group: root
+        recurse: true
       failed_when: "libvirt.storage.pool_path is not defined"
 
     - name: Define custom libvirt storage pool
