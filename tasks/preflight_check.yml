@@ -31,7 +31,7 @@
 - name: Getting CPU virtualization parameters
   shell: |
     set -o pipefail
-    /usr/bin/egrep -o '(vmx|svm)' /proc/cpuinfo | /usr/bin/sort | /usr/bin/uniq
+    /usr/bin/grep -w -o -E 'svm|vmx' /proc/cpuinfo | /usr/bin/uniq
   args:
     executable: /bin/bash
   register: is_virt_capable
